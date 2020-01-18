@@ -1,19 +1,10 @@
 #include <iostream>
 #include <fstream>
 
-//#include "function.h"
-//#include "const.h"
+#include "function.h"
+#include "const.h"
 
 using namespace std;
-
-const int INFINITY = 1000;
-
-int *in(int &, int &);
-void floyd_warshall(const int &, const int *);
-int *getmin(const int *, const int *, const int &);
-void out(const int *, const int *, const int *, const int &, const int &);
-int getSingleIndex(const int &row, const int &col, const int &ColOfArray);
-int *progress(const int *, const int *, const int &, const int &);
 
 int main()
 {
@@ -36,7 +27,7 @@ int getSingleIndex(const int &row, const int &col, const int &ColOfArray)
 int *in(int &n, int &k)
 {
     ifstream infile;
-    infile.open("HOMPHIEU.INP");
+    infile.open("HOMPHIEU.IN");
     infile >> n;
     infile >> k;
     int *arr = new int[n * n];
@@ -76,7 +67,7 @@ void floyd_warshall(const int &n, int *arr)
     }
 }
 
-int *getmin(const int *arr, const int *&mark, const int &n)
+int *getmin(const int *arr, int *&mark, const int &n)
 {
     int maxcity = 0, maxleng = INFINITY;
     int *x = new int;
