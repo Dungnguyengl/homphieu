@@ -3,19 +3,20 @@
 
 #include "function.h"
 #include "const.h"
+#include "struct.h"
 
 using namespace std;
 
 int main()
 {
-    int n, k;
     int *arr = new int;
+    int n, k;
+    arr = nullptr;
     arr = in(n, k);
-    int *city = new int[k];
-    int *mark = new int[n];
-    city = progress(arr, mark, n, k);
     floyd_warshall(n, arr);
-    out(arr, mark, city, n, k);
+    City city[n];
+    getminleng(arr, k, n, city);
+    out(n, k, city);
     return 0;
 }
 
@@ -67,87 +68,114 @@ void floyd_warshall(const int &n, int *arr)
     }
 }
 
-int *getmin(const int *arr, int *&mark, const int &n)
+void getminleng(const int *arr, const int &k, const int &n, City *city)
 {
-    int maxcity = 0, maxleng = INFINITY;
-    int *x = new int;
-    for (int i = 0; i < n; i++)
-    {
-        int city = 0, leng = 0;
-        for (int j = 0; j < n; j++)
-        {
-            if (arr[getSingleIndex(i, j, n)] != 0 && mark[j] == 0)
-            {
-                city++;
-            }
-            if (arr[getSingleIndex(i, j, n) < leng] && mark[j] == 0)
-            {
-                leng = arr[getSingleIndex(i, j, n)];
-            }
-        }
-        if (leng < maxleng || (leng = maxleng && city > maxcity))
-        {
-            maxleng = leng;
-            maxcity = city;
-            *x = i;
-        }
-    }
-    return x;
-}
 
-int *progress(const int *arr, int *mark, const int &n, const int &k)
-{
-    int *x = new int;
-    int *city = new int[k];
-    mark = {0};
-    for (int i = 0; i < k; i++)
+    int minl;      //value min of max leng of all city;
+    int maxl;      //value max leng of city i;
+    int maxltemp;  //value temp of maxl;
+    int temp;      //value temp of city will be picked;
+    int lengc;     //value number minest leng same;
+    int lengctemp; //value temp of lengc;
+    for (size_t x = 0; x < k; x++)
     {
-        for (int j = 0; j < n; j++)
+        lengc = 0;
+        temp = -1;
+        minl = INFINITY;
+        for (size_t i = 0; i < n; i++)
         {
-            x = getmin(arr, mark, n);
-            city[i] = *x;
-            mark[*x] = 1;
-            for (int j = 0; j < n; j++)
+            maxl = INFINITY;
+            lengctemp = 0;
+            if (!city[i].place)
             {
-                if (arr[getSingleIndex(i, j, n)] > 0)
+                maxltemp = INFINITY;
+                for (size_t j = 0; j < n; j++)
                 {
-                    mark[j] = 2;
+                    if (i != j && !city[i].place)
+                    {
+                        maxltemp = arr[getSingleIndex(i, j, n)];
+                        if (maxltemp == maxl)
+                        {
+                            ++lengctemp;
+                        }
+                        else
+                        {
+                            lengctemp = 1;
+                        }
+
+                        maxl = min(maxl, maxltemp);
+                    }
+                }
+
+                if ((minl > maxl || (minl == maxl && lengc < lengctemp)))
+                    if (!city[i].status || (city[i].status && maxl < city[i].leng))
+                    {
+                        minl = maxl;
+                        temp = i;
+                        lengc = lengctemp;
+                    }
+            }
+        }
+
+        for (size_t i = 0; i < n; i++)
+        {
+
+            if (!city[i].place)
+            {
+                if (temp == -1)
+                {
+                    temp = i;
+                }
+                if (arr[getSingleIndex(i, temp, n)] <= minl)
+                {
+                    city[i].leng = arr[getSingleIndex(i, temp, n)];
+                    city[i].to = temp;
+                    city[i].status = 1;
+                }
+                if (i == temp)
+                {
+                    city[i].to = temp;
+                    city[i].leng = 0;
+                    city[i].status = true;
+                    city[i].place = true;
                 }
             }
         }
     }
-    delete x;
-    x = nullptr;
-    return city;
 }
 
-void out(const int *arr, const int *mark, const int *city, const int &n, const int &k)
+void out(const int &n, const int &k, const City *city)
 {
-    int leng, maxleng = 0;
-    for (int i = 0; i < n; i++)
+    int x = 0;
+    int *cityp = new int[k];
+    for (size_t i = 0; i < n; i++)
     {
-        if (mark[i] != 1)
+        if (city[i].place == true)
         {
-            leng = INFINITY;
-            for (int j = 0; j < k; j++)
+            cityp[x] = i;
+            ++x;
+        }
+    }
+    int maxl = 0;
+    for (size_t i = 0; i < k; i++)
+    {
+        for (size_t j = 0; j < n; j++)
+        {
+            if (city[j].to == cityp[i])
             {
-                if (i != city[j] && arr[getSingleIndex(i, city[j], n)] < leng)
-                {
-                    leng = arr[getSingleIndex(i, city[j], n)];
-                }
-            }
-            if (maxleng < leng && leng != INFINITY)
-            {
-                maxleng = leng;
+                maxl = max(maxl, city[j].leng);
             }
         }
     }
+
     ofstream outfile;
     outfile.open("HOMPHIEU.OUT");
-    outfile << maxleng << endl;
-    for (int i = 0; i < k; i++)
+    outfile << maxl << "\n";
+    for (size_t i = 0; i < k; i++)
     {
-        outfile << city[i] << " ";
+        outfile << cityp[i] + 1 << " ";
     }
     outfile.close();
+    delete[] cityp;
+    cityp = nullptr;
 }
